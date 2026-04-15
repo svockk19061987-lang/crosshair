@@ -24,7 +24,7 @@ local function showIntro()
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = "Fix by nyeareate"
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
     textLabel.Font = Enum.Font.GothamBold
     textLabel.TextSize = 40
     textLabel.TextTransparency = 1
@@ -67,8 +67,8 @@ stroke.Color = Color3.fromRGB(0, 0, 0)
 local function updateColor()
     local target = mouse.Target
     circle.BackgroundColor3 = (target and target:IsA("BasePart") and not target.Anchored) 
-        and Color3.fromRGB(255, 255, 255) 
-        or Color3.fromRGB(0, 0, 255)
+        and Color3.fromRGB(0, 0, 255) 
+        or Color3.fromRGB(255, 255, 255)
 end
 
 -- // ФУНКЦИЯ СКРЫТИЯ СТАНДАРТНОГО ПРИЦЕЛА \\
