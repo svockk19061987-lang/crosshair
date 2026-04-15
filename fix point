@@ -1,0 +1,118 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- // АНИМАЦИЯ ЗАПУСКА (ТОЛЬКО ОДИН РАЗ) \\
+local function showIntro()
+    local introGui = Instance.new("ScreenGui")
+    introGui.Name = "IntroGui"
+    introGui.Parent = playerGui
+    introGui.ResetOnSpawn = false
+    introGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    introGui.DisplayOrder = 1000
+
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 0
+    blur.Parent = game:GetService("Lighting")
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Fix by nyeareate"
+    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextSize = 40
+    textLabel.TextTransparency = 1
+    textLabel.Parent = introGui
+
+    TweenService:Create(blur, TweenInfo.new(1), {Size = 20}):Play()
+    TweenService:Create(textLabel, TweenInfo.new(1), {TextTransparency = 0}):Play()
+    task.wait(2)
+    TweenService:Create(blur, TweenInfo.new(1), {Size = 0}):Play()
+    TweenService:Create(textLabel, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    task.wait(1)
+
+    blur:Destroy()
+    introGui:Destroy()
+end
+
+-- // СОЗДАЁМ КРУЖОК \\
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomCrosshair"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.DisplayOrder = 999
+local circle = Instance.new("Frame")
+circle.Name = "Circle"
+circle.Size = UDim2.new(0, 4, 0, 4)
+circle.AnchorPoint = Vector2.new(0.5, 0.5)
+circle.Position = UDim2.new(0.4997, 1, 0.47, 0)
+circle.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+circle.BorderSizePixel = 0
+circle.Parent = screenGui
+
+Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
+
+local stroke = Instance.new("UIStroke", circle)
+stroke.Thickness = 1
+stroke.Color = Color3.fromRGB(0, 0, 0)
+
+-- // ФУНКЦИЯ ОБНОВЛЕНИЯ ЦВЕТА \\
+local function updateColor()
+    local target = mouse.Target
+    circle.BackgroundColor3 = (target and target:IsA("BasePart") and not target.Anchored) 
+        and Color3.fromRGB(0, 0, 255) 
+        or Color3.fromRGB(255, 255, 255)
+end
+
+-- // ФУНКЦИЯ СКРЫТИЯ СТАНДАРТНОГО ПРИЦЕЛА \\
+local function hideDefaultCrosshair()
+    for _, obj in ipairs(playerGui:GetDescendants()) do
+        if obj:IsA("GuiObject") then
+            local name = obj.Name:lower()
+            if name:find("cross") or name:find("cursor") or name:find("aim") or name:find("dot") then
+                obj.Visible = false
+            end
+        end
+    end
+end
+
+-- // ВОССТАНОВЛЕНИЕ КРУЖКА ЕСЛИ ПРОПАЛ \\
+local function restoreCrosshair()
+    if not circle.Parent then
+        if not playerGui:FindFirstChild("CustomCrosshair") then
+            screenGui.Parent = playerGui
+        end
+        circle.Parent = playerGui:FindFirstChild("CustomCrosshair") or screenGui
+    end
+    UserInputService.MouseIconEnabled = false
+    hideDefaultCrosshair()
+    updateColor()
+end
+
+-- // ОПТИМИЗИРОВАННЫЙ ЦИКЛ (РАЗ В 0.1 СЕК, А НЕ КАЖДЫЙ КАДР) \\
+task.spawn(function()
+    while true do
+        restoreCrosshair()
+        task.wait(10000.0)
+    end
+end)
+
+-- // ОБРАБОТЧИК ВОЗРОЖДЕНИЯ \\
+player.CharacterAdded:Connect(function()
+    restoreCrosshair()
+end)
+
+-- // ПОДКЛЮЧАЕМ ОБРАБОТЧИК МЫШИ \\
+mouse.Move:Connect(updateColor)
+
+-- // ЗАПУСК \\
+task.wait(0.5)
+showIntro()
+restoreCrosshair()
